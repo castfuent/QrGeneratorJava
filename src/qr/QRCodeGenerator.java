@@ -1,12 +1,7 @@
 package qr;
 
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.FileOutputStream;
-import java.nio.file.Path;
-
-
-
 import javax.imageio.ImageIO;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.WriterException;
@@ -14,7 +9,7 @@ import com.google.zxing.common.BitMatrix;
 import com.google.zxing.qrcode.QRCodeWriter;
 
 public class QRCodeGenerator {
- 
+
     public static void generateQRCode(String data, String filePath) throws Exception {
         int qr_image_width = 400;
         int qr_image_height = 400;
@@ -34,22 +29,5 @@ public class QRCodeGenerator {
         FileOutputStream qrCode = new FileOutputStream(filePath);
         ImageIO.write(image, IMAGE_FORMAT, qrCode);
         qrCode.close();
-    }
-
-    
-
-
-
-    public static String buildVCard(String name, String org, String title, String email, String phone, String url, String address) {
-        return "BEGIN:VCARD\n" +
-               "VERSION:3.0\n" +
-               "N:" + name + "\n" +
-               "ORG:" + org + "\n" +
-               "TITLE:" + title + "\n" +
-               "EMAIL:" + email + "\n" +
-               "TEL;CELL:" + phone + "\n" +
-               "URL:" + url + "\n" +
-               "ADR;WORK:;;" + address + "\n" +
-               "END:VCARD";
     }
 }

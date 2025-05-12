@@ -2,201 +2,131 @@ package qr;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.util.ArrayList;
+import java.awt.event.*;
+import java.io.File;
 import java.util.Locale;
 import java.util.ResourceBundle;
 
 public class QRCodeApp extends JFrame {
 
-    private JTextField[] fields;
-   private  ResourceBundle bundle;
+    private JTextField nameField, orgField, titleField, emailField, phoneField, urlField, addressField;
+    private ResourceBundle bundle;
+
     public QRCodeApp(Locale locale) {
-
-
-
-  // Cargar el ResourceBundle según el locale
         bundle = ResourceBundle.getBundle("resources.Texts", locale);
-    
-        // Configuración básica del JFrame
-        setTitle("QR Code Generator");
-        setSize(600, 700);
+        setTitle(bundle.getString("title"));
+        setSize(500, 450);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centra la ventana en la pantalla
-
-        // Usamos un layout flexible: GridBagLayout
+        setLocationRelativeTo(null);
         setLayout(new BorderLayout());
 
-        // Instanciar la clase GenerateTest
-       
-       String[] texts = generate();
+        JPanel formPanel = new JPanel(new GridLayout(7, 2, 10, 10));
+        formPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-        // Título
-        JLabel titleLabel = new JLabel(bundle.getString("title")); // El primer elemento es el título
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24)); // Estilo y tamaño grande
-        titleLabel.setHorizontalAlignment(SwingConstants.CENTER); // Centrado
-        titleLabel.setForeground(new Color(30, 144, 255)); // Color del texto
-        
+        nameField = new JTextField();
+        orgField = new JTextField();
+        titleField = new JTextField();
+        emailField = new JTextField();
+        phoneField = new JTextField();
+        urlField = new JTextField();
+        addressField = new JTextField();
 
-        // Panel donde agregamos los campos de texto
-        JPanel formPanel = new JPanel();
-        formPanel.setLayout(new GridBagLayout());
-        GridBagConstraints gbc = new GridBagConstraints();
-        gbc.insets = new Insets(10, 10, 10, 10); // Espaciado entre componentes
-        gbc.anchor = GridBagConstraints.WEST;
+        formPanel.add(new JLabel(bundle.getString("label.name")));
+        formPanel.add(nameField);
+        formPanel.add(new JLabel(bundle.getString("label.organization")));
+        formPanel.add(orgField);
+        formPanel.add(new JLabel(bundle.getString("label.title")));
+        formPanel.add(titleField);
+        formPanel.add(new JLabel(bundle.getString("label.email")));
+        formPanel.add(emailField);
+        formPanel.add(new JLabel(bundle.getString("label.phone")));
+        formPanel.add(phoneField);
+        formPanel.add(new JLabel(bundle.getString("label.url")));
+        formPanel.add(urlField);
+        formPanel.add(new JLabel(bundle.getString("label.address")));
+        formPanel.add(addressField);
 
-        gbc.fill = GridBagConstraints.NONE;  // No forzar a ocupar todo el espacio
-        gbc.weightx = 0;                     // No expandir horizontalmente
-        gbc.gridwidth = 1;
-
-        // Fuentes y colores
-        Font labelFont = new Font("Arial", Font.PLAIN, 14);
-        Font fieldFont = new Font("Arial", Font.PLAIN, 16);
-        Color bgColor = new Color(240, 240, 240);
-        Color fieldColor = new Color(255, 255, 255);
-
-        // Crear los JTextField y almacenarlos en un array
-        fields = new JTextField[15];
-        for (int i = 0; i < fields.length; i++) {
-            fields[i] = createTextField(fieldFont, fieldColor);
-        }
-
-        // Añadir los componentes al layout usando GridBagLayou
-        int row=0;
-        int col=0;
-        for (int i=0;i<texts.length;i++){
-            addLabelAndField(formPanel, gbc, texts[i], fields[i],row,col);
-            col++;
-            if (col==2){ row++;col=0;}
-
-        }
-        // Botón de generar QR
-        JButton generateButton = new JButton("Generate QR");
-        generateButton.setFont(new Font("Arial", Font.BOLD, 16));
+        JButton generateButton = new JButton(bundle.getString("button.generate"));
         generateButton.setBackground(new Color(30, 144, 255));
         generateButton.setForeground(Color.WHITE);
         generateButton.setFocusPainted(false);
-        generateButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                generateQRCode();
-            }
-        });
+        generateButton.addActionListener(e -> generateQRCode());
 
-        // Crear el JScrollPane con el panel de formulario
-        JScrollPane scrollPane = new JScrollPane(formPanel);
-        scrollPane.setPreferredSize(new Dimension(600, 600)); // Tamaño para el scroll
-        add(titleLabel, BorderLayout.NORTH);
-        // Agregar el scrollPane al JFrame
-        add(scrollPane, BorderLayout.CENTER);
+        add(formPanel, BorderLayout.CENTER);
+        add(generateButton, BorderLayout.SOUTH);
 
+        setupMenuBar();
+    }
 
-        // 2. Crea el botón (puede ser antes o después, eso da igual)
-generateButton = new JButton(bundle.getString("button.generate"));
-generateButton.setFont(new Font("Arial", Font.BOLD, 16));
-generateButton.setBackground(new Color(30, 144, 255));
-generateButton.setForeground(Color.WHITE);
-generateButton.setFocusPainted(false);
-generateButton.addActionListener(e -> generateQRCode());
-
-// 3. Y lo añades al sur:
-add(generateButton, BorderLayout.SOUTH);
-
-        // Barra de menú
+    private void setupMenuBar() {
         JMenuBar menuBar = new JMenuBar();
+
         JMenu fileMenu = new JMenu(bundle.getString("menu.file"));
+        JMenuItem newItem = new JMenuItem(bundle.getString("menu.new"));
+        JMenuItem exitItem = new JMenuItem(bundle.getString("menu.exit"));
+
+        newItem.addActionListener(e -> clearFields());
+        exitItem.addActionListener(e -> System.exit(0));
+
+        fileMenu.add(newItem);
+        fileMenu.addSeparator();
+        fileMenu.add(exitItem);
+
         JMenu helpMenu = new JMenu(bundle.getString("menu.help"));
+        JMenuItem aboutItem = new JMenuItem(bundle.getString("menu.about"));
+        aboutItem.addActionListener(e -> showAboutDialog());
 
-        JMenuItem newMenuItem = new JMenuItem(bundle.getString("menu.new"));
-        newMenuItem.addActionListener(e -> clearFields());
-        JMenuItem exitMenuItem = new JMenuItem(bundle.getString("menu.exit"));
-        exitMenuItem.addActionListener(e -> System.exit(0));
-
-        JMenuItem aboutMenuItem = new JMenuItem(bundle.getString("menu.about"));
-        aboutMenuItem.addActionListener(e -> showAboutDialog());
-
-
-        fileMenu.add(newMenuItem);
-        fileMenu.add(exitMenuItem);
-        helpMenu.add(aboutMenuItem);
+        helpMenu.add(aboutItem);
 
         menuBar.add(fileMenu);
         menuBar.add(helpMenu);
-
         setJMenuBar(menuBar);
     }
 
-    private JTextField createTextField(Font font, Color color) {
-        JTextField field = new JTextField(20);
-        field.setFont(font);
-        field.setBackground(color);
-        field.setBorder(BorderFactory.createLineBorder(Color.LIGHT_GRAY, 1));
-        return field;
-    }
-
-    private void addLabelAndField(JPanel panel, GridBagConstraints gbc, String labelText, JTextField field, int row, int col) {
-        // Añadir etiqueta
-        gbc.gridx = col * 2;
-        gbc.gridy = row;
-        panel.add(new JLabel(labelText, JLabel.RIGHT), gbc);
-
-        // Añadir campo de texto
-        gbc.gridx = col * 2 + 1;
-        panel.add(field, gbc);
+    private void clearFields() {
+        nameField.setText("");
+        orgField.setText("");
+        titleField.setText("");
+        emailField.setText("");
+        phoneField.setText("");
+        urlField.setText("");
+        addressField.setText("");
     }
 
     private void generateQRCode() {
-        // Aquí va tu código de generación del QR
-    }
+        String vCard = "BEGIN:VCARD\n" +
+                "VERSION:3.0\n" +
+                "N:" + nameField.getText() + "\n" +
+                "ORG:" + orgField.getText() + "\n" +
+                "TITLE:" + titleField.getText() + "\n" +
+                "EMAIL:" + emailField.getText() + "\n" +
+                "TEL;CELL:" + phoneField.getText() + "\n" +
+                "URL:" + urlField.getText() + "\n" +
+                "ADR;WORK:;;" + addressField.getText() + "\n" +
+                "END:VCARD";
 
-    private void clearFields() {
-        // Limpiar los campos usando el array
-        for (JTextField field : fields) {
-            field.setText("");
+        JFileChooser fileChooser = new JFileChooser();
+        fileChooser.setDialogTitle(bundle.getString("dialog.saveTitle"));
+        fileChooser.setSelectedFile(new File("qrcode.png"));
+
+        int result = fileChooser.showSaveDialog(this);
+        if (result != JFileChooser.APPROVE_OPTION) return;
+
+        try {
+            QRCodeGenerator.generateQRCode(vCard, fileChooser.getSelectedFile().getAbsolutePath());
+            JOptionPane.showMessageDialog(this, bundle.getString("message.success"));
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(this, bundle.getString("message.error") + ex.getMessage());
         }
     }
 
     private void showAboutDialog() {
-        JOptionPane.showMessageDialog(this, bundle.getString("title"));
+        String message = bundle.getString("about.title") + "\nCasfutent Software\nJesus C. de la Fuente\nwww.castfuent.es";
+        JOptionPane.showMessageDialog(this, message, bundle.getString("menu.about"), JOptionPane.INFORMATION_MESSAGE);
     }
-
-
-
-    private String[] generate() {
-        ArrayList<String> texts = new ArrayList<String>();
-        try {
-            
-            texts.add(bundle.getString("label.firstName"));
-            texts.add(bundle.getString("label.middleName"));
-            texts.add(bundle.getString("label.lastName"));
-            texts.add(bundle.getString("label.organization"));
-            texts.add(bundle.getString("label.title"));
-            texts.add(bundle.getString("label.email"));
-            texts.add(bundle.getString("label.phone"));
-            texts.add(bundle.getString("label.url"));
-            texts.add(bundle.getString("label.address"));
-            texts.add(bundle.getString("label.city"));
-            texts.add(bundle.getString("label.state"));
-            texts.add(bundle.getString("label.country"));
-            texts.add(bundle.getString("label.birthday"));
-            texts.add(bundle.getString("label.nickname"));
-            texts.add(bundle.getString("label.note"));
-            
-
-        } catch (Exception e) {
-            e.printStackTrace(); // Imprimir detalles del error si algo falla
-        }
-        String [] te=new String[texts.size()];
-        for (int i=0;i<texts.size();i++) te[i]=texts.get(i);
-        return te;
-    }
-
-
-
 
     public static void main(String[] args) {
-        Locale locale = new Locale("es"); // Cambia el idioma aquí, por ejemplo, a "en" para inglés
+        Locale locale = new Locale("es");
         SwingUtilities.invokeLater(() -> new QRCodeApp(locale).setVisible(true));
     }
 }
